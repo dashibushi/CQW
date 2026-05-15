@@ -78,18 +78,18 @@ public class EmployeeServiceImpl implements EmployeeService {
         BeanUtils.copyProperties(employeeDTO, employee);
 
         //设置创建时间和修改时间
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
+        //employee.setCreateTime(LocalDateTime.now());
+       //employee.setUpdateTime(LocalDateTime.now());
+
+        //设置修改的人员和id
+        //employee.setUpdateUser(BaseContext.getCurrentId());
+        //employee.setCreateUser(BaseContext.getCurrentId());
 
         //设置账号状态，1表示正常状态 0表示锁定状态
         employee.setStatus(StatusConstant.ENABLE);
 
         //设置默认密码123456,对其进行md5加密
         employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));
-
-        //设置修改的人员和id
-        employee.setUpdateUser(BaseContext.getCurrentId());
-        employee.setCreateUser(BaseContext.getCurrentId());
 
         //调用Mapper层，插入数据
         employeeMapper.insertEmployee(employee);
@@ -140,8 +140,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = Employee.builder()
                 .status(status)
                 .id(id)
-                .updateTime(LocalDateTime.now())
-                .updateUser(BaseContext.getCurrentId())
+                //.updateTime(LocalDateTime.now())
+                //.updateUser(BaseContext.getCurrentId())
                 .build();
 
         employeeMapper.update(employee);
@@ -167,8 +167,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void updateEmployee(EmployeeDTO employeeDTO) {
         Employee employee = new Employee();
         BeanUtils.copyProperties(employeeDTO, employee);
-        employee.setUpdateTime(LocalDateTime.now());
-        employee.setUpdateUser(BaseContext.getCurrentId());
+        //employee.setUpdateTime(LocalDateTime.now());
+        //employee.setUpdateUser(BaseContext.getCurrentId());
         employeeMapper.update(employee);
     }
 
