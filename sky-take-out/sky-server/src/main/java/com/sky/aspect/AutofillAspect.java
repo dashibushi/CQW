@@ -12,86 +12,134 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;  // ✅ 正确！这是 Java 反射的 Method
+import java.lang.reflect.Method;
 
-import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
+import java.util.Collection;
 
-/**
- * 自定义切面，实现公共字段自动填充
- */
 @Aspect
 @Component
 @Slf4j
 public class AutofillAspect {
 
-    /**
-     * 切入点
-     */
     @Pointcut("execution(* com.sky.mapper.*.*(..)) && @annotation(com.sky.annotation.AutoFill)")
-    public void autoFillPointCut(){
+    public void autoFillPointCut() {
     }
 
-    /**
-     * 前置通知
-     */
     @Before("autoFillPointCut()")
-    public void autoFill(JoinPoint joinPoint){
+    public void autoFill(JoinPoint joinPoint) {
         log.info("开始进行公共字段填充");
-        //获取当前方法
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        //获取当前方法参数
         AutoFill autoFill = signature.getMethod().getAnnotation(AutoFill.class);
         OperationType value = autoFill.value();
-        //获取当前方法参数对象
         Object[] args = joinPoint.getArgs();
-        //判断参数对象
-        if(args == null || args.length == 0) {
+        if (args == null || args.length == 0) {
             return;
         }
+
         Object entity = args[0];
+
         LocalDateTime now = LocalDateTime.now();
         Long currentId = BaseContext.getCurrentId();
-        if(value == OperationType.INSERT) {
-            //为插入操作的字段赋值
-            //setCreateTime
-            //setUpdateTime
-            //setCreateUser
-            //setUpdateUser
+
+        if (value == OperationType.INSERT) {
+            if (entity instanceof Collection) {
+                Collection<?> collection = (Collection<?>) entity;
+                for (Object item : collection) {
+                    if (item != null) {
+                        setInsertFields(item, now, currentId);
+                    }
+                }
+            } else {
+                setInsertFields(entity, now, currentId);
+            }
+        } else if (value == OperationType.UPDATE) {
+            if (entity instanceof Collection) {
+                Collection<?> collection = (Collection<?>) entity;
+                for (Object item : collection) {
+                    if (item != null) {
+                        setUpdateFields(item, now, currentId);
+                    }
+                }
+            } else {
+                setUpdateFields(entity, now, currentId);
+            }
+        }
+    }
+
+    private void setInsertFields(Object entity, LocalDateTime now, Long currentId) {
+        try {
+            Method setCreateTime = null;
+            Method setUpdateTime = null;
+            Method setCreateUser = null;
+            Method setUpdateUser = null;
+
             try {
-                //获取方法
-                Method setCreateTime = entity.getClass().getMethod(AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class);
-                Method setUpdateTime = entity.getClass().getMethod( AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
-                Method setCreateUser = entity.getClass().getMethod( AutoFillConstant.SET_CREATE_USER, Long.class);
-                Method setUpdateUser = entity.getClass().getMethod( AutoFillConstant.SET_UPDATE_USER, Long.class);
-                //调用方法
+                setCreateTime = entity.getClass().getMethod(AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class);
+            } catch (NoSuchMethodException e) {
+                log.debug("实体 {} 没有 setCreateTime 方法", entity.getClass().getSimpleName());
+            }
+
+            try {
+                setUpdateTime = entity.getClass().getMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
+            } catch (NoSuchMethodException e) {
+                log.debug("实体 {} 没有 setUpdateTime 方法", entity.getClass().getSimpleName());
+            }
+
+            try {
+                setCreateUser = entity.getClass().getMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
+            } catch (NoSuchMethodException e) {
+                log.debug("实体 {} 没有 setCreateUser 方法", entity.getClass().getSimpleName());
+            }
+
+            try {
+                setUpdateUser = entity.getClass().getMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+            } catch (NoSuchMethodException e) {
+                log.debug("实体 {} 没有 setUpdateUser 方法", entity.getClass().getSimpleName());
+            }
+
+            if (setCreateTime != null) {
                 setCreateTime.invoke(entity, now);
+            }
+            if (setUpdateTime != null) {
                 setUpdateTime.invoke(entity, now);
+            }
+            if (setCreateUser != null) {
                 setCreateUser.invoke(entity, currentId);
+            }
+            if (setUpdateUser != null) {
                 setUpdateUser.invoke(entity, currentId);
             }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+        } catch (Exception e) {
+            log.error("自动填充字段失败", e);
         }
-        else if (value == OperationType.UPDATE){
-            //为更新操作的字段赋值
-            //setUpdateTime
-            //setUpdateUser
+    }
+
+    private void setUpdateFields(Object entity, LocalDateTime now, Long currentId) {
+        try {
+            Method setUpdateTime = null;
+            Method setUpdateUser = null;
 
             try {
-                //获取方法
-                Method setUpdateTime = entity.getClass().getMethod( AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
-                Method setUpdateUser = entity.getClass().getMethod( AutoFillConstant.SET_UPDATE_USER, Long.class);
+                setUpdateTime = entity.getClass().getMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
+            } catch (NoSuchMethodException e) {
+                log.debug("实体 {} 没有 setUpdateTime 方法", entity.getClass().getSimpleName());
+            }
 
-                //调用方法
-                        setUpdateTime.invoke(entity, now);
-                        setUpdateUser.invoke(entity, currentId);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            try {
+                setUpdateUser = entity.getClass().getMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+            } catch (NoSuchMethodException e) {
+                log.debug("实体 {} 没有 setUpdateUser 方法", entity.getClass().getSimpleName());
+            }
+
+            if (setUpdateTime != null) {
+                setUpdateTime.invoke(entity, now);
+            }
+            if (setUpdateUser != null) {
+                setUpdateUser.invoke(entity, currentId);
+            }
+        } catch (Exception e) {
+            log.error("自动填充字段失败", e);
         }
-        }
-
-
     }
 }
