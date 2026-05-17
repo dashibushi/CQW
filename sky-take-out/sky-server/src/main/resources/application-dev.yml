@@ -6,9 +6,16 @@ sky:
     database: sky_take_out
     username: root
     password: 20040724
+
   alioss:
     #华北2
     endpoint: oss-cn-beijing.aliyuncs.com
     access-key-id: ${ALIYUN_ACCESS_KEY_ID}
     access-key-secret: ${ALIYUN_ACCESS_KEY_SECRET}
     bucket-name: javaspring-ai0909
+
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 0
