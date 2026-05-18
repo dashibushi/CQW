@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sky.mapper.userMapper">
+
+    <!-- 插入新的用户数据 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into user (name, phone, openid, sex, id_number, avatar, create_time)
+        values (#{name}, #{phone}, #{openid}, #{sex}, #{idNumber}, #{avatar}, #{createTime})
+    </insert>
+
+</mapper>
