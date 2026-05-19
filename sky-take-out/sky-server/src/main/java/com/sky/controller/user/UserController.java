@@ -47,7 +47,8 @@ public class UserController {
         Map<String, Object> claims = new HashMap();
         claims.put(JwtClaimsConstant.USER_ID, user.getId());
         //生成登录令牌
-        String token = JwtUtil.createJWT(jwtProperties.getAdminSecretKey(), jwtProperties.getUserTtl(), claims);
+        String token = JwtUtil.createJWT(jwtProperties.getUserSecretKey(), jwtProperties.getUserTtl(), claims);
+
 
         UserLoginVO userLoginVO = UserLoginVO.builder()
                 .id(user.getId())

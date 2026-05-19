@@ -41,11 +41,11 @@ public interface DishMapper {
 
     /**
      * 根据id查询菜品和口味
-     * @param id
+     * @param categoryId
      * @return
      */
-    @Select("select * from dish where id = #{id}")
-    Dish getById(Long id);
+    @Select("select * from dish where id = #{categoryId}")
+    Dish getById(Long categoryId);
 
     /**
      * 根据id删除菜品数据
@@ -60,4 +60,18 @@ public interface DishMapper {
      */
     @AutoFill(value = OperationType.UPDATE)
     void update(Dish dish);
+
+    /**
+     * 动态条件查询菜品列表
+     * @param dish
+     * @return
+     */
+    List<Dish> list(Dish dish);
+
+    /**
+     * 根据分类id查询菜品
+     * @param categoryIds
+     * @return
+     */
+    List<Dish> listByCategoryIds(List<Long> categoryIds);
 }

@@ -28,12 +28,39 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class DishServiceImpl implements DishService {
+
+
     @Autowired
     private DishMapper dishMapper;
     @Autowired
     private DishFlavorMapper dishFlavorMapper;
     @Autowired
     private SetmealDishMapper setmealDishMapper;
+
+    /**
+     * 根据categoryId查寻菜品
+     * @param categoryId
+     * @return
+     */
+    @Override
+    public List<DishVO> listcategoryId(List<Long> categoryIds) {
+        List<DishVO> dishVOList = new ArrayList<>();
+
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            List<Dish> dishList = dishMapper.listByCategoryIds(categoryIds);
+
+            for (Dish dish : dishList) {
+                DishVO dishVO = new DishVO();
+                BeanUtils.copyProperties(dish, dishVO);
+
+                List<DishFlavor> flavors = dishFlavorMapper.getByDishId(dish.getId());
+                dishVO.setFlavors(flavors);
+
+                dishVOList.add(dishVO);
+            }
+        }
+        return dishVOList;
+    }
     /**
      * 新增菜品和对应的口味
      * @param dishDTO
@@ -146,5 +173,29 @@ public class DishServiceImpl implements DishService {
             dishFlavorMapper.insertBatch(flavors);
         }
 
+    }
+
+    /**
+     * 条件查询菜品和口味
+     * @param dish
+     * @return
+     */
+    public List<DishVO> listWithFlavor(Dish dish) {
+        List<Dish> dishList = dishMapper.list(dish);
+
+        List<DishVO> dishVOList = new ArrayList<>();
+
+        for (Dish d : dishList) {
+            DishVO dishVO = new DishVO();
+            BeanUtils.copyProperties(d,dishVO);
+
+            //根据菜品id查询对应的口味
+            List<DishFlavor> flavors = dishFlavorMapper.getByDishId(d.getId());
+
+            dishVO.setFlavors(flavors);
+            dishVOList.add(dishVO);
+        }
+
+        return dishVOList;
     }
 }
