@@ -152,6 +152,7 @@ public class SetmealServiceImpl implements SetmealService {
      */
     @Override
     public List<Setmeal> list(Setmeal setmeal) {
+        log.info("查询条件：{}", setmeal);
         List<Setmeal> list = setmealMapper.list(setmeal);
         return list;
     }

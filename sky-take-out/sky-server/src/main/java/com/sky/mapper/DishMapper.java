@@ -74,4 +74,12 @@ public interface DishMapper {
      * @return
      */
     List<Dish> listByCategoryIds(List<Long> categoryIds);
+
+    /**
+     * 批量起售、批量停售
+     * @param status
+     * @param ids
+     */
+    @Update("update dish set status = #{status} where id = #{id}")
+    void startOrStop(Integer status, Long id);
 }
